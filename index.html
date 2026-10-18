@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LuckyBet — Social Casino</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --bg-card: #141a22;
+            --bg-elevated: #1a2230;
+            --bg-input: #1c2430;
+            --border: #243040;
+            --text: #e8eef5;
+            --text-muted: #8b9bb0;
+            --accent: #2d9cdb;
+            --accent-hover: #3db0f0;
+            --green: #2ecc71;
+            --gold: #f1c40f;
+            --purple: #9b59b6;
+            --red: #e74c3c;
+            --radius: 14px;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: calc(70px + var(--safe-bottom));
+            -webkit-font-smoothing: antialiased;
+        }
+        .header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(11, 15, 20, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
+        .logo span { color: var(--accent); }
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+        .btn {
+            border: none; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.2s; font-family: inherit; padding: 9px 16px;
+        }
+        .btn-ghost { background: var(--bg-elevated); color: var(--text); }
+        .btn-ghost:hover { background: #243040; }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-gold { background: linear-gradient(135deg, #f1c40f, #e67e22); color: #1a1200; }
+        .user-chip {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--bg-elevated); padding: 6px 12px 6px 6px;
+            border-radius: 50px; cursor: pointer;
+        }
+        .user-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; font-weight: 700;
+        }
+        .user-coins { font-weight: 700; color: var(--gold); font-size: 0.9rem; }
+        .main { max-width: 520px; margin: 0 auto; padding: 16px; }
+        .search-box {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px 16px; margin-bottom: 24px;
+        }
+        .search-box input {
+            flex: 1; background: transparent; border: none; outline: none;
+            color: var(--text); font-size: 0.95rem; font-family: inherit;
+        }
+        .search-box input::placeholder { color: var(--text-muted); }
+        .search-icon { color: var(--text-muted); font-size: 1.1rem; }
+        .section-header {
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+        }
+        .section-title { font-size: 1.05rem; font-weight: 700; }
+        .section-link {
+            color: var(--accent); font-size: 0.9rem; font-weight: 600;
+            background: none; border: none; cursor: pointer;
+        }
+        .games-scroll {
+            display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;
+            margin-bottom: 28px; scrollbar-width: none;
+        }
+        .games-scroll::-webkit-scrollbar { display: none; }
+        .game-card {
+            flex: 0 0 160px; height: 180px; border-radius: var(--radius);
+            padding: 14px; display: flex; flex-direction: column; justify-content: flex-end;
+            position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s;
+        }
+        .game-card:active { transform: scale(0.97); }
+        .game-card .card-icon {
+            position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+            font-size: 3.2rem; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+        }
+        .game-card .card-title {
+            font-weight: 800; font-size: 0.95rem; text-transform: uppercase;
+            letter-spacing: 0.3px; line-height: 1.2; z-index: 1;
+        }
+        .game-card .card-sub { font-size: 0.72rem; opacity: 0.85; margin-top: 3px; z-index: 1; }
+        .card-purple { background: linear-gradient(160deg, #6b2d9b 0%, #3d1a6e 100%); }
+        .card-orange { background: linear-gradient(160deg, #e67e22 0%, #c0392b 100%); }
+        .card-blue { background: linear-gradient(160deg, #2980b9 0%, #1a5276 100%); }
+        .card-green { background: linear-gradient(160deg, #27ae60 0%, #1e8449 100%); }
+        .card-gold { background: linear-gradient(160deg, #f39c12 0%, #d68910 100%); }
+        .banner {
+            background: linear-gradient(135deg, #1a2a3a 0%, #0f1c28 100%);
+            border-radius: var(--radius); padding: 24px 20px; margin-bottom: 20px;
+            position: relative; overflow: hidden; border: 1px solid var(--border);
+        }
+        .banner h2 { font-size: 1.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 8px; }
+        .banner p { color: var(--text-muted); font-size: 0.9rem; }
+        .banner-coins { position: absolute; right: 16px; top: 20px; font-size: 2.5rem; opacity: 0.9; }
+        .free-list {
+            background: var(--bg-card); border-radius: var(--radius);
+            border: 1px solid var(--border); overflow: hidden; margin-bottom: 24px;
+        }
+        .free-item {
+            display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+            border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s;
+        }
+        .free-item:last-child { border-bottom: none; }
+        .free-item:active { background: var(--bg-elevated); }
+        .free-icon {
+            width: 36px; height: 36px; border-radius: 10px; background: var(--bg-elevated);
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+        }
+        .free-text { font-size: 0.92rem; font-weight: 500; }
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(15, 20, 28, 0.96); backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around;
+            padding: 8px 0 calc(8px + var(--safe-bottom)); z-index: 100;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            background: none; border: none; color: var(--text-muted);
+            font-size: 0.7rem; font-weight: 500; cursor: pointer; padding: 6px 12px;
+            font-family: inherit; transition: color 0.15s;
+        }
+        .nav-item.active { color: var(--accent); }
+        .nav-item .nav-icon { font-size: 1.25rem; }
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200;
+            display: none; align-items: flex-end; justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-card); border-radius: 20px 20px 0 0;
+            width: 100%; max-width: 480px; padding: 24px 20px 32px;
+            animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+        .modal-title { font-size: 1.35rem; font-weight: 800; text-align: center; margin-bottom: 6px; }
+        .modal-sub { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+        .form-group input {
+            width: 100%; padding: 13px 14px; background: var(--bg-input);
+            border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+            font-size: 1rem; font-family: inherit; outline: none;
+        }
+        .form-group input:focus { border-color: var(--accent); }
+        .form-error { color: var(--red); font-size: 0.85rem; margin-top: 8px; text-align: center; min-height: 20px; }
+        .modal-btn { width: 100%; padding: 14px; font-size: 1rem; margin-top: 8px; }
+        .modal-switch { text-align: center; margin-top: 18px; font-size: 0.9rem; color: var(--text-muted); }
+        .modal-switch a { color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: none; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .screen-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .back-btn {
+            width: 40px; height: 40px; border-radius: 10px; background: var(--bg-elevated);
+            border: none; color: var(--text); font-size: 1.2rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .screen-header h2 { font-size: 1.2rem; font-weight: 700; }
+        .slot-machine {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 24px 16px; text-align: center;
+        }
+        .slot-reels {
+            display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;
+            background: #0a0e14; padding: 16px; border-radius: 12px;
+        }
+        .reel {
+            width: 80px; height: 80px; background: var(--bg-elevated);
+            border: 2px solid #3a4a5c; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 2.8rem;
+        }
+        .reel.spinning { animation: reelSpin 0.08s infinite; }
+        @keyframes reelSpin { 0%, 100% { transform: translateY(-4px); } 50% { transform: translateY(4px); } }
+        .bet-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 16px; }
+        .bet-btn {
+            width: 36px; height: 36px; border-radius: 50%; background: var(--bg-elevated);
+            border: 1px solid var(--border); color: var(--text); font-size: 1.2rem; cursor: pointer;
+        }
+        .bet-value { font-weight: 800; font-size: 1.2rem; color: var(--gold); min-width: 70px; }
+        .result-text { min-height: 28px; font-weight: 700; font-size: 1.05rem; margin-top: 14px; }
+        .result-text.win { color: var(--green); }
+        .result-text.lose { color: var(--text-muted); }
+        .chest-area { text-align: center; padding: 30px 0; }
+        .chest-icon { font-size: 6rem; margin-bottom: 16px; display: inline-block; }
+        .chest-icon.opening { animation: chestShake 0.5s ease; }
+        @keyframes chestShake {
+            0%, 100% { transform: rotate(0); }
+            25% { transform: rotate(-12deg) scale(1.05); }
+            75% { transform: rotate(12deg) scale(1.05); }
+        }
+        .profile-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 24px; text-align: center;
+        }
+        .profile-avatar-lg {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; font-weight: 800; margin: 0 auto 12px;
+        }
+        .profile-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+        .stat-box {
+            background: var(--bg); border-radius: 12px; padding: 14px; border: 1px solid var(--border);
+        }
+        .stat-box .val { font-size: 1.25rem; font-weight: 800; color: var(--gold); }
+        .stat-box .lbl { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+        .chat-list { display: flex; flex-direction: column; gap: 10px; }
+        .chat-msg {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px 14px;
+        }
+        .chat-msg .who { font-weight: 700; font-size: 0.85rem; color: var(--accent); margin-bottom: 4px; }
+        .chat-msg .txt { font-size: 0.9rem; }
+        .toast {
+            position: fixed; bottom: calc(80px + var(--safe-bottom)); left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--bg-elevated); border: 1px solid var(--accent);
+            color: var(--text); padding: 12px 22px; border-radius: 50px;
+            font-weight: 600; font-size: 0.9rem; z-index: 300;
+            opacity: 0; transition: all 0.3s ease; white-space: nowrap; max-width: 90%;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .reward-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 18px; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 14px;
+        }
+        .reward-card .r-icon { font-size: 1.8rem; }
+        .reward-card .r-info { flex: 1; }
+        .reward-card .r-title { font-weight: 700; font-size: 0.95rem; }
+        .reward-card .r-desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Lucky<span>Bet</span></div>
+        <div class="header-actions" id="headerActions"></div>
+    </header>
+
+    <div class="main">
+        <div id="screen-home" class="screen active">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search Games" oninput="filterGames()">
+            </div>
+            <div class="section-header">
+                <div class="section-title">LuckyBet Originals</div>
+                <button class="section-link">View All →</button>
+            </div>
+            <div class="games-scroll" id="gamesScroll">
+                <div class="game-card card-purple" onclick="openGame('chests')">
+                    <div class="card-icon">📦</div>
+                    <div class="card-title">Chests</div>
+                    <div class="card-sub">LuckyBet Original</div>
+                </div>
+                <div class="game-card card-orange" onclick="openGame('battles')">
+                    <div class="card-icon">⚔️</div>
+                    <div class="card-title">Chest Battles</div>
+                    <div class="card-sub">LuckyBet Original</div>
+                </div>
+                <div class="game-card card-blue" onclick="openGame('slots')">
+                    <div class="card-icon">🎰</div>
+                    <div class="card-title">Slots</div>
+                    <div class="card-sub">Classic</div>
+                </div>
+                <div class="game-card card-green" onclick="openGame('roulette')">
+                    <div class="card-icon">🎡</div>
+                    <div class="card-title">Roulette</div>
+                    <div class="card-sub">Classic</div>
+                </div>
+                <div class="game-card card-gold" onclick="openGame('blackjack')">
+                    <div class="card-icon">🃏</div>
+                    <div class="card-title">Blackjack</div>
+                    <div class="card-sub">Classic</div>
+                </div>
+            </div>
+            <div class="banner">
+                <div class="banner-coins">🪙</div>
+                <h2>No Purchase<br>Necessary</h2>
+                <p>Here are all the ways you can play without payment.</p>
+            </div>
+            <div class="free-list">
+                <div class="free-item" onclick="claimPromo()">
+                    <div class="free-icon">🎟️</div>
+                    <div class="free-text">Redeem free promo codes</div>
+                </div>
+                <div class="free-item" onclick="claimRain()">
+                    <div class="free-icon">🌧️</div>
+                    <div class="free-text">Free token rains every 30 min</div>
+                </div>
+                <div class="free-item" onclick="showScreen('rewards')">
+                    <div class="free-icon">🎁</div>
+                    <div class="free-text">Daily & weekly rewards</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-slots" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('home')">←</button>
+                <h2>🎰 Slots</h2>
+            </div>
+            <div class="slot-machine">
+                <div class="slot-reels">
+                    <div class="reel" id="r1">🍒</div>
+                    <div class="reel" id="r2">🍋</div>
+                    <div class="reel" id="r3">7️⃣</div>
+                </div>
+                <div class="bet-row">
+                    <button class="bet-btn" onclick="changeBet('slots', -50)">−</button>
+                    <div class="bet-value" id="slotsBet">100</div>
+                    <button class="bet-btn" onclick="changeBet('slots', 50)">+</button>
+                </div>
+                <button class="btn btn-gold modal-btn" id="spinBtn" onclick="spinSlots()" style="max-width:220px;margin:0 auto;">SPIN</button>
+                <div class="result-text" id="slotsResult"></div>
+            </div>
+        </div>
+
+        <div id="screen-roulette" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('home')">←</button>
+                <h2>🎡 Roulette</h2>
+            </div>
+            <div class="slot-machine">
+                <div style="font-size:4rem;margin-bottom:12px;" id="rouletteDisplay">🎯</div>
+                <div class="bet-row">
+                    <button class="bet-btn" onclick="changeBet('roulette', -50)">−</button>
+                    <div class="bet-value" id="rouletteBet">100</div>
+                    <button class="bet-btn" onclick="changeBet('roulette', 50)">+</button>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px;">
+                    <button class="btn btn-ghost" data-rb="red" onclick="selectRBet(this)" style="border:2px solid #e74c3c;">Red</button>
+                    <button class="btn btn-ghost" data-rb="black" onclick="selectRBet(this)" style="border:2px solid #555;">Black</button>
+                    <button class="btn btn-ghost" data-rb="green" onclick="selectRBet(this)" style="border:2px solid #2ecc71;">Zero</button>
+                </div>
+                <button class="btn btn-gold modal-btn" id="rouletteBtn" onclick="spinRoulette()" style="max-width:220px;margin:0 auto;">SPIN</button>
+                <div class="result-text" id="rouletteResult"></div>
+            </div>
+        </div>
+
+        <div id="screen-blackjack" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('home')">←</button>
+                <h2>🃏 Blackjack</h2>
+            </div>
+            <div class="slot-machine">
+                <div style="margin-bottom:16px;">
+                    <div style="color:var(--text-muted);font-size:0.85rem;">Dealer</div>
+                    <div id="dealerCards" style="font-size:1.8rem;min-height:40px;margin:6px 0;"></div>
+                    <div id="dealerScore" style="font-weight:700;color:var(--gold);"></div>
+                </div>
+                <div style="margin-bottom:16px;">
+                    <div style="color:var(--text-muted);font-size:0.85rem;">You</div>
+                    <div id="playerCards" style="font-size:1.8rem;min-height:40px;margin:6px 0;"></div>
+                    <div id="playerScore" style="font-weight:700;color:var(--gold);"></div>
+                </div>
+                <div class="bet-row">
+                    <button class="bet-btn" onclick="changeBet('bj', -50)">−</button>
+                    <div class="bet-value" id="bjBet">100</div>
+                    <button class="bet-btn" onclick="changeBet('bj', 50)">+</button>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                    <button class="btn btn-primary" id="bjDeal" onclick="bjDeal()">Deal</button>
+                    <button class="btn btn-ghost" id="bjHit" onclick="bjHit()" disabled>Hit</button>
+                    <button class="btn btn-ghost" id="bjStand" onclick="bjStand()" disabled>Stand</button>
+                </div>
+                <div class="result-text" id="bjResult"></div>
+            </div>
+        </div>
+
+        <div id="screen-chests" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('home')">←</button>
+                <h2>📦 Chests</h2>
+            </div>
+            <div class="slot-machine">
+                <div class="chest-area">
+                    <div class="chest-icon" id="chestIcon">🎁</div>
+                    <p style="color:var(--text-muted);margin-bottom:16px;">Open a chest for a random reward!</p>
+                    <div class="bet-row">
+                        <button class="bet-btn" onclick="changeBet('chest', -50)">−</button>
+                        <div class="bet-value" id="chestBet">100</div>
+                        <button class="bet-btn" onclick="changeBet('chest', 50)">+</button>
+                    </div>
+                    <button class="btn btn-gold modal-btn" id="chestBtn" onclick="openChest()" style="max-width:220px;margin:0 auto;">OPEN CHEST</button>
+                    <div class="result-text" id="chestResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-battles" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('home')">←</button>
+                <h2>⚔️ Chest Battles</h2>
+            </div>
+            <div class="slot-machine">
+                <div style="display:flex;justify-content:space-around;margin-bottom:20px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:2.5rem;" id="battleYou">🎁</div>
+                        <div style="font-weight:700;margin-top:6px;">You</div>
+                        <div id="battleYouVal" style="color:var(--gold);font-weight:700;">—</div>
+                    </div>
+                    <div style="font-size:1.5rem;align-self:center;font-weight:800;color:var(--text-muted);">VS</div>
+                    <div style="text-align:center;">
+                        <div style="font-size:2.5rem;" id="battleOpp">🎁</div>
+                        <div style="font-weight:700;margin-top:6px;">Opponent</div>
+                        <div id="battleOppVal" style="color:var(--gold);font-weight:700;">—</div>
+                    </div>
+                </div>
+                <div class="bet-row">
+                    <button class="bet-btn" onclick="changeBet('battle', -50)">−</button>
+                    <div class="bet-value" id="battleBet">100</div>
+                    <button class="bet-btn" onclick="changeBet('battle', 50)">+</button>
+                </div>
+                <button class="btn btn-gold modal-btn" id="battleBtn" onclick="startBattle()" style="max-width:220px;margin:0 auto;">FIGHT</button>
+                <div class="result-text" id="battleResult"></div>
+            </div>
+        </div>
+
+        <div id="screen-rewards" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('home')">←</button>
+                <h2>🎁 Rewards</h2>
+            </div>
+            <div class="reward-card">
+                <div class="r-icon">📅</div>
+                <div class="r-info">
+                    <div class="r-title">Daily Bonus</div>
+                    <div class="r-desc">+500 coins every day</div>
+                </div>
+                <button class="btn btn-primary" id="dailyBtn" onclick="claimDaily()">Claim</button>
+            </div>
+            <div class="reward-card">
+                <div class="r-icon">🌧️</div>
+                <div class="r-info">
+                    <div class="r-title">Token Rain</div>
+                    <div class="r-desc">Free coins every 30 min</div>
+                </div>
+                <button class="btn btn-primary" id="rainBtn" onclick="claimRain()">Claim</button>
+            </div>
+            <div class="reward-card">
+                <div class="r-icon">🎟️</div>
+                <div class="r-info">
+                    <div class="r-title">Promo Code</div>
+                    <div class="r-desc">Enter WELCOME or LUCKY100</div>
+                </div>
+                <button class="btn btn-ghost" onclick="claimPromo()">Redeem</button>
+            </div>
+        </div>
+
+        <div id="screen-chat" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('home')">←</button>
+                <h2>💬 Chat</h2>
+            </div>
+            <div class="chat-list">
+                <div class="chat-msg"><div class="who">LuckyBot</div><div class="txt">Welcome to LuckyBet! Play for free and have fun 🎉</div></div>
+                <div class="chat-msg"><div class="who">HighRoller99</div><div class="txt">Just hit 50x on slots!!</div></div>
+                <div class="chat-msg"><div class="who">ChestQueen</div><div class="txt">Anyone up for chest battles?</div></div>
+                <div class="chat-msg"><div class="who">SpinMaster</div><div class="txt">Daily bonus claimed ✅</div></div>
+            </div>
+            <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin-top:20px;">Chat is demo-only in this version</p>
+        </div>
+
+        <div id="screen-profile" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('home')">←</button>
+                <h2>Profile</h2>
+            </div>
+            <div class="profile-card">
+                <div class="profile-avatar-lg" id="profileAvatar">?</div>
+                <h3 id="profileName" style="font-size:1.2rem;margin-bottom:4px;">Guest</h3>
+                <p style="color:var(--text-muted);font-size:0.9rem;" id="profileEmail">Not logged in</p>
+                <div class="profile-stats">
+                    <div class="stat-box"><div class="val" id="statCoins">0</div><div class="lbl">Coins</div></div>
+                    <div class="stat-box"><div class="val" id="statGames">0</div><div class="lbl">Games</div></div>
+                    <div class="stat-box"><div class="val" id="statWins">0</div><div class="lbl">Wins</div></div>
+                    <div class="stat-box"><div class="val" id="statBest">0</div><div class="lbl">Best Win</div></div>
+                </div>
+                <button class="btn btn-ghost modal-btn" onclick="logout()">Log Out</button>
+            </div>
+        </div>
+
+        <div id="screen-menu" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('home')">←</button>
+                <h2>Menu</h2>
+            </div>
+            <div class="free-list">
+                <div class="free-item" onclick="showScreen('profile')"><div class="free-icon">👤</div><div class="free-text">Profile</div></div>
+                <div class="free-item" onclick="showScreen('rewards')"><div class="free-icon">🎁</div><div class="free-text">Rewards</div></div>
+                <div class="free-item" onclick="showToast('Affiliate coming soon')"><div class="free-icon">💵</div><div class="free-text">Affiliate</div></div>
+                <div class="free-item" onclick="showToast('Support: support@luckybet.demo')"><div class="free-icon">🎧</div><div class="free-text">Support</div></div>
+                <div class="free-item" onclick="showToast('This is a free social casino demo')"><div class="free-icon">ℹ️</div><div class="free-text">About</div></div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-screen="home" onclick="showScreen('home')">
+            <span class="nav-icon">🏠</span> Home
+        </button>
+        <button class="nav-item" data-screen="chat" onclick="showScreen('chat')">
+            <span class="nav-icon">💬</span> Chat
+        </button>
+        <button class="nav-item" data-screen="rewards" onclick="showScreen('rewards')">
+            <span class="nav-icon">🎁</span> Rewards
+        </button>
+        <button class="nav-item" data-screen="menu" onclick="showScreen('menu')">
+            <span class="nav-icon">☰</span> Menu
+        </button>
+    </nav>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <div class="modal-handle"></div>
+            <div class="modal-title">Welcome back</div>
+            <div class="modal-sub">Log in to your LuckyBet account</div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="you@email.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPass" placeholder="••••••••">
+            </div>
+            <div class="form-error" id="loginError"></div>
+            <button class="btn btn-primary modal-btn" onclick="doLogin()">Log In</button>
+            <div class="modal-switch">Don't have an account? <a onclick="switchModal('register')">Register</a></div>
+            <div class="modal-switch" style="margin-top:10px;"><a onclick="closeModals()">Continue as guest</a></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal">
+            <div class="modal-handle"></div>
+            <div class="modal-title">Create account</div>
+            <div class="modal-sub">Join LuckyBet — it's free!</div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="regName" placeholder="CoolPlayer" maxlength="16">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="regEmail" placeholder="you@email.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="regPass" placeholder="Min. 4 characters">
+            </div>
+            <div class="form-error" id="regError"></div>
+            <button class="btn btn-primary modal-btn" onclick="doRegister()">Register</button>
+            <div class="modal-switch">Already have an account? <a onclick="switchModal('login')">Log In</a></div>
+            <div class="modal-switch" style="margin-top:10px;"><a onclick="closeModals()">Continue as guest</a></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const state = {
+            user: null,
+            bets: { slots: 100, roulette: 100, bj: 100, chest: 100, battle: 100 },
+            selectedRBet: null,
+            bj: { deck: [], player: [], dealer: [], active: false }
+        };
+
+        function loadUsers() { return JSON.parse(localStorage.getItem('lb_users') || '{}'); }
+        function saveUsers(users) { localStorage.setItem('lb_users', JSON.stringify(users)); }
+        function loadSession() {
+            const email = localStorage.getItem('lb_session');
+            if (!email) return null;
+            return loadUsers()[email] || null;
+        }
+        function saveSession(email) {
+            if (email) localStorage.setItem('lb_session', email);
+            else localStorage.removeItem('lb_session');
+        }
+        function persistUser() {
+            if (!state.user) return;
+            const users = loadUsers();
+            users[state.user.email] = state.user;
+            saveUsers(users);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function updateHeader() {
+            const el = document.getElementById('headerActions');
+            if (state.user) {
+                el.innerHTML = '<div class="user-chip" onclick="showScreen(\'profile\')"><div class="user-avatar">' +
+                    state.user.name[0].toUpperCase() + '</div><span class="user-coins">🪙 ' +
+                    state.user.coins.toLocaleString() + '</span></div>';
+            } else {
+                el.innerHTML = '<button class="btn btn-ghost" onclick="openModal(\'login\')">Login</button>' +
+                    '<button class="btn btn-primary" onclick="openModal(\'register\')">Register</button>';
+            }
+        }
+
+        function updateProfile() {
+            if (!state.user) return;
+            document.getElementById('profileAvatar').textContent = state.user.name[0].toUpperCase();
+            document.getElementById('profileName').textContent = state.user.name;
+            document.getElementById('profileEmail').textContent = state.user.email;
+            document.getElementById('statCoins').textContent = state.user.coins.toLocaleString();
+            document.getElementById('statGames').textContent = state.user.games;
+            document.getElementById('statWins').textContent = state.user.wins;
+            document.getElementById('statBest').textContent = state.user.best.toLocaleString();
+            checkDailyUI();
+            checkRainUI();
+        }
+
+        function requireLogin() {
+            if (!state.user) {
+                openModal('login');
+                showToast('Please log in to play');
+                return false;
+            }
+            return true;
+        }
+
+        function openModal(type) {
+            closeModals();
+            document.getElementById(type + 'Modal').classList.add('show');
+        }
+        function closeModals() {
+            document.getElementById('loginModal').classList.remove('show');
+            document.getElementById('registerModal').classList.remove('show');
+        }
+        function switchModal(type) { closeModals(); openModal(type); }
+
+        function doRegister() {
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('regPass').value;
+            const err = document.getElementById('regError');
+            if (name.length < 2) { err.textContent = 'Username too short'; return; }
+            if (!email.includes('@')) { err.textContent = 'Invalid email'; return; }
+            if (pass.length < 4) { err.textContent = 'Password min 4 characters'; return; }
+            const users = loadUsers();
+            if (users[email]) { err.textContent = 'Email already registered'; return; }
+            users[email] = {
+                name, email, pass, coins: 10000, games: 0, wins: 0, best: 0,
+                lastDaily: null, lastRain: null, usedPromos: []
+            };
+            saveUsers(users);
+            state.user = users[email];
+            saveSession(email);
+            closeModals();
+            updateHeader();
+            updateProfile();
+            showToast('Welcome, ' + name + '! +10,000 coins 🎉');
+        }
+
+        function doLogin() {
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('loginPass').value;
+            const err = document.getElementById('loginError');
+            const u = loadUsers()[email];
+            if (!u || u.pass !== pass) { err.textContent = 'Wrong email or password'; return; }
+            state.user = u;
+            saveSession(email);
+            closeModals();
+            updateHeader();
+            updateProfile();
+            showToast('Welcome back, ' + u.name + '!');
+        }
+
+        function logout() {
+            state.user = null;
+            saveSession(null);
+            updateHeader();
+            showScreen('home');
+            showToast('Logged out');
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => {
+                n.classList.toggle('active', n.dataset.screen === id);
+            });
+            if (id === 'profile' || id === 'rewards') updateProfile();
+            window.scrollTo(0, 0);
+        }
+
+        function openGame(game) {
+            if (!requireLogin()) return;
+            showScreen(game);
+        }
+
+        function filterGames() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.game-card').forEach(c => {
+                const title = c.querySelector('.card-title').textContent.toLowerCase();
+                c.style.display = title.includes(q) ? '' : 'none';
+            });
+        }
+
+        function changeBet(type, delta) {
+            const v = state.bets[type] + delta;
+            if (v >= 50 && v <= 2000) {
+                state.bets[type] = v;
+                document.getElementById(type + 'Bet').textContent = v;
+            }
+        }
+
+        function spend(amount) {
+            if (state.user.coins < amount) { showToast('Not enough coins!'); return false; }
+            state.user.coins -= amount;
+            state.user.games++;
+            persistUser();
+            updateHeader();
+            return true;
+        }
+
+        function win(amount) {
+            state.user.coins += amount;
+            state.user.wins++;
+            if (amount > state.user.best) state.user.best = amount;
+            persistUser();
+            updateHeader();
+        }
+
+        const symbols = ['🍒','🍋','🍊','🍇','7️⃣','💎','🔔','⭐'];
+        const payouts = {'7️⃣7️⃣7️⃣':50,'💎💎💎':30,'⭐⭐⭐':20,'🔔🔔🔔':15,'🍒🍒🍒':10,'🍋🍋🍋':8,'🍊🍊🍊':8,'🍇🍇🍇':8};
+
+        function spinSlots() {
+            if (!spend(state.bets.slots)) return;
+            const btn = document.getElementById('spinBtn');
+            btn.disabled = true;
+            const reels = [document.getElementById('r1'), document.getElementById('r2'), document.getElementById('r3')];
+            reels.forEach(r => r.classList.add('spinning'));
+            let n = 0;
+            const iv = setInterval(() => {
+                reels.forEach(r => r.textContent = symbols[Math.floor(Math.random()*symbols.length)]);
+                n++;
+                if (n > 12) {
+                    clearInterval(iv);
+                    let res = [0,1,2].map(() => symbols[Math.floor(Math.random()*symbols.length)]);
+                    if (Math.random() < 0.14) res = [res[0], res[0], res[0]];
+                    reels.forEach((r,i) => { r.classList.remove('spinning'); r.textContent = res[i]; });
+                    const mult = payouts[res.join('')] || 0;
+                    const w = state.bets.slots * mult;
+                    const el = document.getElementById('slotsResult');
+                    if (w > 0) {
+                        win(w);
+                        el.textContent = '🎉 +' + w.toLocaleString() + ' coins! (x' + mult + ')';
+                        el.className = 'result-text win';
+                        showToast('+' + w.toLocaleString());
+                    } else {
+                        el.textContent = 'Try again!';
+                        el.className = 'result-text lose';
+                    }
+                    btn.disabled = false;
+                }
+            }, 70);
+        }
+
+        function selectRBet(el) {
+            document.querySelectorAll('[data-rb]').forEach(b => b.style.opacity = '0.5');
+            el.style.opacity = '1';
+            state.selectedRBet = el.dataset.rb;
+        }
+
+        function spinRoulette() {
+            if (!state.selectedRBet) { showToast('Select a color'); return; }
+            if (!spend(state.bets.roulette)) return;
+            const btn = document.getElementById('rouletteBtn');
+            btn.disabled = true;
+            document.getElementById('rouletteDisplay').textContent = '🌀';
+            setTimeout(() => {
+                const roll = Math.random();
+                let color, num;
+                if (roll < 0.027) { color = 'green'; num = 0; }
+                else if (roll < 0.513) { color = 'red'; num = Math.floor(Math.random()*18)+1; }
+                else { color = 'black'; num = Math.floor(Math.random()*18)+1; }
+                document.getElementById('rouletteDisplay').textContent = color === 'red' ? '🔴' : color === 'black' ? '⚫' : '🟢';
+                const el = document.getElementById('rouletteResult');
+                if (state.selectedRBet === color) {
+                    const mult = color === 'green' ? 36 : 2;
+                    const w = state.bets.roulette * mult;
+                    win(w);
+                    el.textContent = '🎉 ' + num + ' ' + color + '! +' + w.toLocaleString();
+                    el.className = 'result-text win';
+                    showToast('+' + w.toLocaleString());
+                } else {
+                    el.textContent = num + ' ' + color + '. No luck.';
+                    el.className = 'result-text lose';
+                }
+                btn.disabled = false;
+            }, 1200);
+        }
+
+        function makeDeck() {
+            const s = ['♠','♥','♦','♣'], v = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+            const d = [];
+            for (const su of s) for (const va of v) d.push({v: va, s: su});
+            for (let i = d.length-1; i > 0; i--) {
+                const j = Math.floor(Math.random()*(i+1));
+                [d[i], d[j]] = [d[j], d[i]];
+            }
+            return d;
+        }
+        function cVal(c) {
+            if (['J','Q','K'].includes(c.v)) return 10;
+            if (c.v === 'A') return 11;
+            return +c.v;
+        }
+        function handScore(h) {
+            let s = 0, a = 0;
+            for (const c of h) { s += cVal(c); if (c.v === 'A') a++; }
+            while (s > 21 && a) { s -= 10; a--; }
+            return s;
+        }
+        function renderHand(h) { return h.map(c => c.v + c.s).join(' '); }
+
+        function bjDeal() {
+            if (!spend(state.bets.bj)) return;
+            state.bj.deck = makeDeck();
+            state.bj.player = [state.bj.deck.pop(), state.bj.deck.pop()];
+            state.bj.dealer = [state.bj.deck.pop(), state.bj.deck.pop()];
+            state.bj.active = true;
+            document.getElementById('bjDeal').disabled = true;
+            document.getElementById('bjHit').disabled = false;
+            document.getElementById('bjStand').disabled = false;
+            document.getElementById('bjResult').textContent = '';
+            document.getElementById('playerCards').textContent = renderHand(state.bj.player);
+            document.getElementById('playerScore').textContent = handScore(state.bj.player);
+            document.getElementById('dealerCards').textContent = state.bj.dealer[0].v + state.bj.dealer[0].s + ' 🂠';
+            document.getElementById('dealerScore').textContent = cVal(state.bj.dealer[0]);
+            if (handScore(state.bj.player) === 21) bjStand();
+        }
+        function bjHit() {
+            if (!state.bj.active) return;
+            state.bj.player.push(state.bj.deck.pop());
+            document.getElementById('playerCards').textContent = renderHand(state.bj.player);
+            document.getElementById('playerScore').textContent = handScore(state.bj.player);
+            if (handScore(state.bj.player) > 21) bjEnd(false, 'Bust!');
+        }
+        function bjStand() {
+            if (!state.bj.active) return;
+            while (handScore(state.bj.dealer) < 17) state.bj.dealer.push(state.bj.deck.pop());
+            document.getElementById('dealerCards').textContent = renderHand(state.bj.dealer);
+            document.getElementById('dealerScore').textContent = handScore(state.bj.dealer);
+            const p = handScore(state.bj.player), d = handScore(state.bj.dealer);
+            if (d > 21 || p > d) bjEnd(true, 'You win!');
+            else if (p < d) bjEnd(false, 'Dealer wins');
+            else bjEnd(null, 'Push');
+        }
+        function bjEnd(won, msg) {
+            state.bj.active = false;
+            document.getElementById('bjDeal').disabled = false;
+            document.getElementById('bjHit').disabled = true;
+            document.getElementById('bjStand').disabled = true;
+            const el = document.getElementById('bjResult');
+            if (won === true) {
+                const w = state.bets.bj * 2;
+                win(w);
+                el.textContent = '🎉 ' + msg + ' +' + w.toLocaleString();
+                el.className = 'result-text win';
+                showToast('+' + w.toLocaleString());
+            } else if (won === false) {
+                el.textContent = msg;
+                el.className = 'result-text lose';
+            } else {
+                state.user.coins += state.bets.bj;
+                persistUser();
+                updateHeader();
+                el.textContent = msg;
+                el.className = 'result-text';
+            }
+        }
+
+        function openChest() {
+            if (!spend(state.bets.chest)) return;
+            const btn = document.getElementById('chestBtn');
+            btn.disabled = true;
+            const icon = document.getElementById('chestIcon');
+            icon.classList.add('opening');
+            icon.textContent = '📦';
+            setTimeout(() => {
+                icon.classList.remove('opening');
+                const mults = [0, 0, 0.5, 1, 1.5, 2, 3, 5, 10];
+                const mult = mults[Math.floor(Math.random() * mults.length)];
+                const w = Math.floor(state.bets.chest * mult);
+                const el = document.getElementById('chestResult');
+                if (w > 0) {
+                    win(w);
+                    icon.textContent = '✨';
+                    el.textContent = '🎉 Found ' + w.toLocaleString() + ' coins! (x' + mult + ')';
+                    el.className = 'result-text win';
+                    showToast('+' + w.toLocaleString());
+                } else {
+                    icon.textContent = '💨';
+                    el.textContent = 'Empty chest...';
+                    el.className = 'result-text lose';
+                }
+                setTimeout(() => { icon.textContent = '🎁'; btn.disabled = false; }, 1500);
+            }, 600);
+        }
+
+        function startBattle() {
+            if (!spend(state.bets.battle)) return;
+            const btn = document.getElementById('battleBtn');
+            btn.disabled = true;
+            const youVal = Math.floor(Math.random() * 1000) + 50;
+            const oppVal = Math.floor(Math.random() * 1000) + 50;
+            document.getElementById('battleYou').textContent = '📦';
+            document.getElementById('battleOpp').textContent = '📦';
+            document.getElementById('battleYouVal').textContent = '...';
+            document.getElementById('battleOppVal').textContent = '...';
+            setTimeout(() => {
+                document.getElementById('battleYou').textContent = '✨';
+                document.getElementById('battleOpp').textContent = '✨';
+                document.getElementById('battleYouVal').textContent = youVal;
+                document.getElementById('battleOppVal').textContent = oppVal;
+                const el = document.getElementById('battleResult');
+                if (youVal > oppVal) {
+                    const w = state.bets.battle * 2;
+                    win(w);
+                    el.textContent = '🎉 You win! +' + w.toLocaleString();
+                    el.className = 'result-text win';
+                    showToast('+' + w.toLocaleString());
+                } else if (youVal < oppVal) {
+                    el.textContent = 'Opponent wins';
+                    el.className = 'result-text lose';
+                } else {
+                    state.user.coins += state.bets.battle;
+                    persistUser();
+                    updateHeader();
+                    el.textContent = 'Draw!';
+                    el.className = 'result-text';
+                }
+                btn.disabled = false;
+            }, 1000);
+        }
+
+        function checkDailyUI() {
+            const btn = document.getElementById('dailyBtn');
+            if (!state.user) return;
+            const today = new Date().toDateString();
+            if (state.user.lastDaily === today) {
+                btn.disabled = true; btn.textContent = 'Claimed';
+            } else {
+                btn.disabled = false; btn.textContent = 'Claim';
+            }
+        }
+        function claimDaily() {
+            if (!requireLogin()) return;
+            const today = new Date().toDateString();
+            if (state.user.lastDaily === today) { showToast('Already claimed today'); return; }
+            state.user.lastDaily = today;
+            state.user.coins += 500;
+            persistUser();
+            updateHeader();
+            updateProfile();
+            showToast('+500 daily bonus!');
+        }
+        function checkRainUI() {
+            const btn = document.getElementById('rainBtn');
+            if (!state.user) return;
+            const now = Date.now();
+            if (state.user.lastRain && now - state.user.lastRain < 30 * 60 * 1000) {
+                btn.disabled = true; btn.textContent = 'Wait';
+            } else {
+                btn.disabled = false; btn.textContent = 'Claim';
+            }
+        }
+        function claimRain() {
+            if (!requireLogin()) return;
+            const now = Date.now();
+            if (state.user.lastRain && now - state.user.lastRain < 30 * 60 * 1000) {
+                const left = Math.ceil((30*60*1000 - (now - state.user.lastRain)) / 60000);
+                showToast('Wait ' + left + ' min');
+                return;
+            }
+            state.user.lastRain = now;
+            const amount = 100 + Math.floor(Math.random() * 200);
+            state.user.coins += amount;
+            persistUser();
+            updateHeader();
+            updateProfile();
+            showToast('Token rain! +' + amount);
+        }
+        function claimPromo() {
+            if (!requireLogin()) return;
+            const code = prompt('Enter promo code:');
+            if (!code) return;
+            const c = code.trim().toUpperCase();
+            if (state.user.usedPromos.includes(c)) { showToast('Code already used'); return; }
+            let amount = 0;
+            if (c === 'WELCOME') amount = 1000;
+            else if (c === 'LUCKY100') amount = 100;
+            else if (c === 'CHEST') amount = 500;
+            else { showToast('Invalid code'); return; }
+            state.user.usedPromos.push(c);
+            state.user.coins += amount;
+            persistUser();
+            updateHeader();
+            showToast('Promo activated! +' + amount);
+        }
+
+        state.user = loadSession();
+        updateHeader();
+        if (state.user) updateProfile();
+
+        document.querySelectorAll('.modal-overlay').forEach(o => {
+            o.addEventListener('click', e => { if (e.target === o) closeModals(); });
+        });
+    </script>
+</body>
+</html>
